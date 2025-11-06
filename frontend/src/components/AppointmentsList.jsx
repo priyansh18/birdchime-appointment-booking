@@ -1,19 +1,82 @@
-export default function AppointmentsList({ appointments, onCancel }) {
+import { useState } from 'react';
+
+export default function AppointmentsList({ appointments, onCancel, onAppointmentCancelled }) {
+  const [cancellingId, setCancellingId] = useState(null);
+
   const cancel = async (id) => {
-    await fetch(`http://localhost:4000/api/appointments/${id}`, { method: "DELETE" });
-    onCancel();
+    try {
+      setCancellingId(id);
+      const response = await fetch(`http://localhost:4000/api/appointments/${id}`, { 
+        method: "DELETE" 
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to cancel appointment');
+      }
+      
+      if (onAppointmentCancelled) {
+        onAppointmentCancelled();
+      }
+      if (onCancel) {
+        onCancel();
+      }
+    } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      alert('Failed to cancel appointment. Please try again.');
+    } finally {
+      setCancellingId(null);
+    }
   };
 
+  const formatDateTime = (dateTime) => {
+    const date = new Date(dateTime);
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (appointments.length === 0) {
+    return (
+      <div className="appointments-container">
+        <h3 className="appointments-title">Upcoming Appointments</h3>
+        <p className="no-appointments">No upcoming appointments.</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h3>Booked Appointments</h3>
-      {appointments.length === 0 && <p>No appointments yet.</p>}
-      {appointments.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime)).map(a => (
-        <div key={a.id} style={{ marginBottom: 6 }}>
-          {new Date(a.dateTime).toLocaleString()} - {a.name} ({a.reason || "No reason"})
-          <button onClick={() => cancel(a.id)}>Cancel</button>
-        </div>
-      ))}
+    <div className="appointments-container">
+      <h3 className="appointments-title">Upcoming Appointments</h3>
+      <div className="appointments-list">
+        {appointments
+          .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime))
+          .map((appointment) => (
+            <div key={appointment.id} className="appointment-item">
+              <div className="appointment-details">
+                <div className="appointment-time">
+                  {formatDateTime(appointment.dateTime)}
+                </div>
+                <div className="appointment-info">
+                  <span className="appointment-name">{appointment.name}</span>
+                  {appointment.reason && (
+                    <span className="appointment-reason"> - {appointment.reason}</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => cancel(appointment.id)}
+                disabled={cancellingId === appointment.id}
+                className="cancel-btn"
+              >
+                {cancellingId === appointment.id ? 'Cancelling...' : 'Cancel'}
+              </button>
+            </div>
+          ))}
+      </div>
     </div>
   );
 }

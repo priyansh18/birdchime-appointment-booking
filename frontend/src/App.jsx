@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import BookingModal from "./components/BookingModal";
+import AppointmentsList from "./components/AppointmentsList";
 import "./index.css";
 
 export default function App() {
@@ -149,7 +150,7 @@ export default function App() {
                     return (
                       <div 
                         key={iso} 
-                        className={`time-slot ${isCurrentHour ? 'current-hour' : ''} ${isPast || appt ? 'disabled' : ''}`}
+                        className={`time-slot ${isCurrentHour ? 'current-hour' : ''} ${isPast ? 'disabled' : ''} ${appt ? 'booked' : ''}`}
                       >
                         <div className="time-label">
                           {s.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -157,8 +158,59 @@ export default function App() {
                         <div className="slot-content">
                           {appt ? (
                             <div className="booked-slot">
-                              <span className="booked-badge">Booked</span>
-                              <div className="booked-by">{appt.name}</div>
+                              <div className="booked-info">
+                                <span className="booked-badge">Booked</span>
+                                <div className="booked-by">{appt.name}</div>
+                              </div>
+                              <button 
+                                className="cancel-appointment-btn"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (!window.confirm(`Are you sure you want to cancel this appointment with ${appt.name}?`)) {
+                                    return;
+                                  }
+                                  
+                                  try {
+                                    console.log('Attempting to cancel appointment:', {
+                                      id: appt.id,
+                                      type: typeof appt.id,
+                                      name: appt.name,
+                                      dateTime: appt.dateTime
+                                    });
+
+                                    const response = await fetch(`http://localhost:4000/api/appointments/${appt.id}`, { 
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/json'
+                                      }
+                                    });
+
+                                    console.log('Response status:', response.status);
+                                    
+                                    if (!response.ok) {
+                                      const errorData = await response.json().catch(() => ({}));
+                                      console.error('Error response:', errorData);
+                                      throw new Error(errorData.error || 'Failed to cancel appointment');
+                                    }
+
+                                    const result = await response.json();
+                                    console.log('Successfully cancelled appointment:', result);
+                                    
+                                    // Refresh the appointments list
+                                    await fetchAppointments();
+                                    
+                                    // Show success message
+                                    alert('Appointment cancelled successfully!');
+                                    
+                                  } catch (error) {
+                                    console.error('Error cancelling appointment:', error);
+                                    alert(`Error: ${error.message || 'Failed to cancel appointment'}`);
+                                  }
+                                }}
+                              >
+                                Cancel
+                              </button>
                             </div>
                           ) : isPast ? (
                             <div className="past-slot">
@@ -193,53 +245,10 @@ export default function App() {
           )}
 
           <div className="appointments-section">
-            <h2 style={{ margin: '40px 0 20px', color: '#2d3748' }}>Upcoming Appointments</h2>
-            {appointments.length === 0 ? (
-              <p className="no-appointments">No upcoming appointments. Book a slot above to get started!</p>
-            ) : (
-              <div className="appointments-list">
-                {appointments
-                  .slice()
-                  .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime))
-                  .map((a) => (
-                    <div key={a.id} className="appointment-row">
-                      <div className="appointment-time">
-                        <div className="appointment-date">
-                          {new Date(a.dateTime).toLocaleDateString([], {
-                            weekday: "short",
-                            day: "numeric",
-                            month: "short"
-                          })}
-                        </div>
-                        <div className="appointment-time-slot">
-                          {new Date(a.dateTime).toLocaleTimeString([], { 
-                            hour: "2-digit", 
-                            minute: "2-digit" 
-                          })}
-                        </div>
-                      </div>
-                      <div className="appointment-details">
-                        <div className="appointment-header">
-                          <h4 className="appointment-name">{a.name}</h4>
-                          <a href={`mailto:${a.email}`} className="appointment-email">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                              <polyline points="22,6 12,13 2,6"></polyline>
-                            </svg>
-                            {a.email}
-                          </a>
-                        </div>
-                        {a.reason && (
-                          <div className="appointment-reason">
-                            <span className="reason-label">Reason:</span>
-                            <span className="reason-text">{a.reason}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
+            <AppointmentsList 
+              appointments={appointments.filter(a => new Date(a.dateTime) > new Date())}
+              onAppointmentCancelled={fetchAppointments}
+            />
           </div>
         </>
       )}

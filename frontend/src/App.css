@@ -42,17 +42,129 @@
 }
 
 /* Appointments Section */
-.appointments-section {
-  margin: 3rem 0;
-  padding: 0 1rem;
+.appointments-container {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.appointments-section h2 {
+.appointments-title {
   color: #2d3748;
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
   border-bottom: 2px solid #e2e8f0;
+  font-weight: 600;
+}
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appointment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.appointment-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.appointment-time {
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.appointment-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.appointment-name {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1.05rem;
+}
+
+.appointment-reason {
+  color: #4a5568;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.cancel-btn {
+  background: #fff;
+  color: #e53e3e;
+  border: 1px solid #feb2b2;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #fff5f5;
+  border-color: #feb2b2;
+  color: #c53030;
+}
+
+.cancel-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.no-appointments {
+  color: #718096;
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .appointment-details {
+    width: 100%;
+  }
+  
+  .cancel-btn {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
 }
 
 .no-appointments {
