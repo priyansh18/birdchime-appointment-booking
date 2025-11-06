@@ -2,8 +2,21 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
-// Enable CORS for all routes by using the middleware globally
-app.use(cors());
+
+var dynamicCorsOptions = function(req, callback) {
+  var corsOptions;
+  if (req.path.startsWith('/api/appointments')) {
+    corsOptions = {
+      origin: 'https://babfrontend.vercel.app', // Allow only a specific origin
+      credentials: true,            // Enable cookies and credentials
+    };
+  } else {
+    corsOptions = { origin: '*' };   // Allow all origins for other routes
+  }
+  callback(null, corsOptions);
+};
+
+app.use(cors(dynamicCorsOptions));
 
 let inMemoryData = [];
 
@@ -26,6 +39,7 @@ let inMemoryData = [];
 //     }
 //   },
 // };
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
