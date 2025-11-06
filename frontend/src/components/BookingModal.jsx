@@ -12,12 +12,18 @@ export default function BookingModal({ slotIso, onClose, onBooked }) {
     setError('');
 
     try {
+      // Ensure dateTime is in ISO string format
+      const dateTime = new Date(slotIso).toISOString();
+      
       const res = await fetch(API_CONFIG.BASE_URL + API_ENDPOINTS.APPOINTMENTS.BASE, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({ 
           ...form, 
-          dateTime: slotIso 
+          dateTime
         }),
       });
 

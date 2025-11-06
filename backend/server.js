@@ -43,17 +43,35 @@ app.get('/api/appointments', (req, res) => {
 
 app.post('/api/appointments', (req, res) => {
   try {
-    const { name, email, dateTime, reason = '' } = req.body;
-    if (!name || !email || !dateTime) {
+    const { name, email, dateTime: dateTimeStr, reason = '' } = req.body;
+    
+    // Validate required fields
+    if (!name || !email || !dateTimeStr) {
       return res.status(400).json({ error: 'Name, email, and dateTime are required' });
     }
 
+    // Parse and validate date
+    const dateTime = new Date(dateTimeStr);
+    if (isNaN(dateTime.getTime())) {
+      return res.status(400).json({ error: 'Invalid date format. Please use ISO 8601 format' });
+    }
+
     const data = readData();
-    if (data.some(a => a.dateTime === dateTime)) {
+    
+    // Check for duplicate appointments
+    if (data.some(a => new Date(a.dateTime).getTime() === dateTime.getTime())) {
       return res.status(400).json({ error: 'Time slot already booked' });
     }
 
-    const appointment = { id: Date.now(), name, email, dateTime, reason, createdAt: new Date().toISOString() };
+    const appointment = { 
+      id: Date.now(), 
+      name, 
+      email, 
+      dateTime: dateTime.toISOString(), 
+      reason, 
+      createdAt: new Date().toISOString() 
+    };
+    
     data.push(appointment);
     writeData(data);
     res.status(201).json(appointment);
