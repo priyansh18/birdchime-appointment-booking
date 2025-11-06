@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import BookingModal from "./components/BookingModal";
-import AppointmentsList from "./components/AppointmentsList";
+import UpcomingAppointments from "./pages/UpcomingAppointments";
 import "./index.css";
+import "./App.css";
 
-export default function App() {
+function CalendarPage() {
   const [appointments, setAppointments] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null); // ISO string
   const [loading, setLoading] = useState(true);
@@ -121,9 +123,19 @@ export default function App() {
 
   return (
     <div className="app-light">
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1>Weekly Appointment Slots</h1>
-        <p style={{ color: '#666', marginTop: '8px' }}>30-minute slots | {new Date().toLocaleDateString([], { month: 'long', year: 'numeric' })}</p>
+      <nav className="main-nav">
+        <div className="nav-container">
+          <h1>Appointment Scheduler</h1>
+          <div className="nav-links">
+            <Link to="/" className="nav-link active">Calendar</Link>
+            <Link to="/upcoming" className="nav-link">My Appointments</Link>
+          </div>
+        </div>
+      </nav>
+      
+      <div className="header">
+        <h2>Weekly Appointment Slots</h2>
+        <p className="subtitle">30-minute slots | {new Date().toLocaleDateString([], { month: 'long', year: 'numeric' })}</p>
       </div>
 
       {loading ? (
@@ -244,14 +256,39 @@ export default function App() {
             />
           )}
 
-          <div className="appointments-section">
-            <AppointmentsList 
-              appointments={appointments.filter(a => new Date(a.dateTime) > new Date())}
-              onAppointmentCancelled={fetchAppointments}
-            />
+          <div className="view-appointments-container">
+            <Link to="/upcoming" className="view-appointments-btn">
+              View My Appointments
+            </Link>
           </div>
         </>
       )}
     </div>
   );
 }
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<CalendarPage />} />
+        <Route path="/upcoming" element={
+          <div className="app-light">
+            <nav className="main-nav">
+              <div className="nav-container">
+                <h1>Appointment Scheduler</h1>
+                <div className="nav-links">
+                  <Link to="/" className="nav-link">Calendar</Link>
+                  <Link to="/upcoming" className="nav-link active">My Appointments</Link>
+                </div>
+              </div>
+            </nav>
+            <UpcomingAppointments />
+          </div>
+        } />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
