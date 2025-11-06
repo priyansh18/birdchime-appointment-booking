@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const API_URL = 'https://babb-priyansh.vercel.app/api/appointments'
+const API_URL = 'https://appointment-scheduler-server.vercel.app/api/appointments'
 export default function BookingModal({ slotIso, onClose, onBooked }) {
   const [form, setForm] = useState({ name: '', email: '', reason: '' });
   const [error, setError] = useState('');

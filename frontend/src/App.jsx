@@ -4,7 +4,7 @@ import BookingModal from './components/BookingModal';
 import UpcomingAppointments from './pages/UpcomingAppointments';
 import './index.css';
 import './App.css';
-const API_URL = 'https://babb-priyansh.vercel.app/api/appointments'
+const API_URL = 'https://appointment-scheduler-server.vercel.app/api/appointments'
 const TimeSlot = ({ slot, appointment, onBook, onCancel }) => {
   const isPast = slot.getTime() < Date.now();
   const isCurrentHour = new Date().getHours() === slot.getHours() && 
