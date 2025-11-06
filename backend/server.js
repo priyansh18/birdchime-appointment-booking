@@ -5,62 +5,25 @@ const app = express();
 let inMemoryData = [];
 
 // CORS configuration
-// const whitelist = [
-//   'https://babfrontend.vercel.app',
-//   'http://localhost:5173',
-//   'http://localhost:3000',
-//   'http://127.0.0.1:5173',
-//   'http://127.0.0.1:3000'
-// ];
-
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     // Allow requests with no origin (like mobile apps, curl, postman)
-//     if (!origin) return callback(null, true);
-    
-//     if (whitelist.indexOf(origin) !== -1 || whitelist.some(domain => origin.startsWith(domain))) {
-//       callback(null, true);
-//     } else {
-//       console.log('Not allowed by CORS:', origin);
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-//   exposedHeaders: ['Content-Range', 'X-Content-Range']
-// };
-
-// Apply CORS before other middleware
-// app.use(cors(corsOptions));
-app.options(/(.*)/, cors({
-  origin: 'https://babfrontend.vercel.app/', // Replace with your client's origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
-})); // Enable pre-flight for all routes
-
-
-// Add CORS headers to all responses
-app.use((req, res, next) => {
-  const orgin = req.headers.origin;
-  res.header('Access-Control-Allow-Origin', orgin);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+const whitelist = [
+  'https://babfrontend.vercel.app',
+  "https://babfrontend.vercel.app/",
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+];
+ 
+var corsOptionsDelegate = function (req, callback) {
+  var corsOptions;
+  if (whitelist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false } // disable CORS for this request
   }
-  
-  next();
-});
-
-
-app.use(cors({
-  origin: 'https://babfrontend.vercel.app/', // Replace with your client's origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
-}));
+  callback(null, corsOptions) // callback expects two parameters: error and options
+}
+ 
 
 // Body parsers
 app.use(express.json());
@@ -86,7 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', cors(corsOptionsDelegate), (req, res) => {
   res.json({ 
     message: 'Appointment Booking API',
     status: 'running',
@@ -99,11 +62,11 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health',   cors(corsOptionsDelegate), (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/appointments', (req, res) => {
+app.get('/api/appointments', cors(corsOptionsDelegate), (req, res) => {
   try {
     console.log('Fetching all appointments');
     const data = [...inMemoryData];
@@ -118,7 +81,7 @@ app.get('/api/appointments', (req, res) => {
   }
 });
 
-app.post('/api/appointments', async (req, res) => {
+app.post('/api/appointments', cors(corsOptionsDelegate), async (req, res) => {
   try {
     console.log('Received appointment request:', req.body);
     
@@ -198,7 +161,7 @@ app.post('/api/appointments', async (req, res) => {
   }
 });
 
-app.delete('/api/appointments/:id', async (req, res) => {
+app.delete('/api/appointments/:id', cors(corsOptionsDelegate), async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`Received delete request for appointment ID: ${id}`);

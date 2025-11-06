@@ -9,7 +9,7 @@
       "methods": ["GET"]
     },
     {
-      "src": "/api/(.*)",
+      "src": "/api/appointments",
       "dest": "/server.js",
       "methods": ["GET", "POST", "DELETE"]
     }
