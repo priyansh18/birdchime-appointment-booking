@@ -6,27 +6,25 @@ const app = express();
 const PORT = 4000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
+const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+};
+app.use(cors(corsOptions));
+
+app.use(express.json());
+
 // Initialize data file if it doesn't exist
 if (!fs.existsSync(DATA_FILE)) {
   fs.writeFileSync(DATA_FILE, '[]');
 }
-
-// CORS middleware
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
-  
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  }
-  
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  next();
-});
-
-app.use(express.json());
 
 const readData = () => JSON.parse(fs.readFileSync(DATA_FILE));
 const writeData = (data) => fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
