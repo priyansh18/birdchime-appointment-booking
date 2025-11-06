@@ -7,19 +7,33 @@ const app = express();
 const PORT = 4000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://babf-priyansh.vercel.app/'];
-
-var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+// Enable CORS for all routes
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'https://babb-priyansh.vercel.app',
+      'https://babf-priyansh.vercel.app'
+    ];
+    
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      return callback(null, true);
     }
+    
+    console.log('CORS blocked for origin:', origin);
+    return callback(new Error('Not allowed by CORS'));
   },
-};
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
-app.use(cors(corsOptions));
+// Handle preflight requests
+app.options('*', cors());
 app.use(express.json());
 
 // Initialize data file if it doesn't exist
