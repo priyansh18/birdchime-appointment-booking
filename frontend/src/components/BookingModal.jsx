@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const API_URL = 'https://birdchime-appointment-booking-zq6c.vercel.app/api/appointments'
+const API_URL = 'https://birdchime-appointment-booking.vercel.app/api/appointments'
 export default function BookingModal({ slotIso, onClose, onBooked }) {
   const [form, setForm] = useState({ name: '', email: '', reason: '' });
   const [error, setError] = useState('');

@@ -5,17 +5,23 @@ const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const DATA_FILE = path.join(__dirname, 'data.json');
+const isVercel = process.env.VERCEL === '1';
+const DATA_FILE = isVercel ? null : path.join(__dirname, 'data.json');
 
 // In-memory storage for Vercel (read-only filesystem)
 let inMemoryData = [];
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Enable CORS for all routes - Allow all origins since Vercel generates dynamic URLs
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  credentials: true
 }));
 
 // Handle preflight requests
