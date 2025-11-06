@@ -99,6 +99,19 @@ const writeData = (data) => {
 };
 
 // Routes
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Appointment Booking API',
+    status: 'running',
+    endpoints: {
+      health: '/api/health',
+      appointments: '/api/appointments',
+      createAppointment: 'POST /api/appointments',
+      deleteAppointment: 'DELETE /api/appointments/:id'
+    }
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -182,8 +195,8 @@ app.delete('/api/appointments/:id', (req, res) => {
 // Export the app for Vercel serverless functions
 module.exports = app;
 
-// Only start the server if not in serverless environment
-if (process.env.NODE_ENV !== 'production') {
+// Only start the server if running locally (not in Vercel)
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
