@@ -4,31 +4,31 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-// // CORS configuration
-// const whitelist = [
-//   'https://babfrontend.vercel.app',
-//   "https://babfrontend.vercel.app/",
-//   'http://localhost:5173',
-//   'http://localhost:3000',
-//   'http://127.0.0.1:5173',
-//   'http://127.0.0.1:3000'
-// ];
+// CORS configuration
+const whitelist = [
+  'https://babfrontend.vercel.app',
+  "https://babfrontend.vercel.app/",
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+];
  
-// var corsOptionsDelegate = function (req, callback) {
-//   var corsOptions;
-//   if (whitelist.indexOf(req.header('Origin')) !== -1) {
-//     corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
-//   } else {
-//     corsOptions = { origin: false } // disable CORS for this request
-//   }
-//   callback(null, corsOptions) // callback expects two parameters: error and options
-// }
+var corsOptionsDelegate = function (req, callback) {
+  var corsOptions;
+  if (whitelist.indexOf(req.header('Origin')) !== -1) {
+    corsOptions = { origin: true } // reflect (enable) the requested origin in the CORS response
+  } else {
+    corsOptions = { origin: false } // disable CORS for this request
+  }
+  callback(null, corsOptions) // callback expects two parameters: error and options
+}
  
 
 // Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+
 // Add CORS headers to all responses
 // app.use((req, res, next) => {
 //   const origin = req.headers.origin;
