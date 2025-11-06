@@ -177,31 +177,7 @@ app.delete('/api/appointments/:id', async (req, res) => {
   }
 });
 
-// For Vercel serverless functions
-exports.handler = async (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Request-Method', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    res.statusCode = 200;
-    res.end();
-    return;
-  }
-
-  // Forward the request to Express
-  return app(req, res);
-};
-
-// Only start the server if running locally (not in Vercel)
-if (require.main === module) {
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`Storage mode: ${process.env.NODE_ENV === 'production' ? 'in-memory' : 'file-based'}`);
-  });
-}
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`listening on ${PORT}`);
+});
