@@ -4,32 +4,58 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-// // Uncomment it out if in development mode
-// // app.use(morgan("tiny"));
-// var whitelist = [
-//   "https://babfrontend.vercel.app/",
-//   "https://babfrontend.vercel.app",
-//   "https://babbackend.vercel.app",
-//   "https://babbackend.vercel.app/",
-//   "http://localhost:5173", // for react apps
-//   "http://localhost:3000", // for react apps
-//   // "http://localhost:4000", // for react apps
-// ];
+// CORS configuration
+const whitelist = [
+  'https://babfrontend.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000'
+];
 
-// var corsOptions = {
-//   origin: function (origin, callback) {
-//     console.log({origin})
-//     if (whitelist.indexOf(origin) !== -1) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-// };
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true);
+    
+    if (whitelist.indexOf(origin) !== -1 || whitelist.some(domain => origin.startsWith(domain))) {
+      callback(null, true);
+    } else {
+      console.log('Not allowed by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range']
+};
 
-app.use(cors());
+// Apply CORS before other middleware
+app.use(cors(corsOptions));
+app.options(/(.*)/, cors(corsOptions)); // Enable pre-flight for all routes
+
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Add CORS headers to all responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (whitelist.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // Routes
 app.get('/', (req, res) => {
