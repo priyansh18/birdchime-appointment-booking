@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { API_CONFIG, API_ENDPOINTS } from '../config';
 
+const API_URL = 'https://babb.vercel.app/api/appointments';
 export default function AppointmentsList({ appointments, onCancel, onAppointmentCancelled }) {
   const [cancellingId, setCancellingId] = useState(null);
 
   const cancel = async (id) => {
     try {
       setCancellingId(id);
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.APPOINTMENTS.BY_ID(id)}`, { 
+      
+      const response = await fetch(`${API_URL}/${id}`, { 
         method: "DELETE" 
       });
       

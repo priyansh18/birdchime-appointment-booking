@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { API_CONFIG, API_ENDPOINTS } from '../config';
 import '../styles/UpcomingAppointments.css';
 
+const API_URL = 'https://babb.vercel.app/api/appointments'
 const UpcomingAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +13,7 @@ const UpcomingAppointments = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.APPOINTMENTS.BASE}`);
+      const res = await fetch(API_URL);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setAppointments(Array.isArray(data) ? data : []);
@@ -36,7 +36,7 @@ const UpcomingAppointments = () => {
     }
 
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.APPOINTMENTS.BY_ID(appointmentId)}`, { 
+      const response = await fetch(`${API_URL}/${appointmentId}`, { 
         method: 'DELETE',
         headers: {
           'Accept': 'application/json',

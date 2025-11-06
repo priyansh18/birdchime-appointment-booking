@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { API_CONFIG, API_ENDPOINTS } from '../config';
 
+const API_URL = 'https://babb.vercel.app/api/appointments'
 export default function BookingModal({ slotIso, onClose, onBooked }) {
   const [form, setForm] = useState({ name: '', email: '', reason: '' });
   const [error, setError] = useState('');
@@ -15,7 +15,7 @@ export default function BookingModal({ slotIso, onClose, onBooked }) {
       // Ensure dateTime is in ISO string format
       const dateTime = new Date(slotIso).toISOString();
       
-      const res = await fetch(API_CONFIG.BASE_URL + API_ENDPOINTS.APPOINTMENTS.BASE, {
+      const res = await fetch(API_URL, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

@@ -1,12 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const PORT = 4000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://babf.vercel.app/'];
 
 var corsOptions = {
   origin: function (origin, callback) {
@@ -42,7 +43,7 @@ app.get('/api/appointments', (req, res) => {
 app.post('/api/appointments', (req, res) => {
   try {
     const { name, email, dateTime: dateTimeStr, reason = '' } = req.body;
-    
+
     // Validate required fields
     if (!name || !email || !dateTimeStr) {
       return res.status(400).json({ error: 'Name, email, and dateTime are required' });
@@ -55,21 +56,21 @@ app.post('/api/appointments', (req, res) => {
     }
 
     const data = readData();
-    
+
     // Check for duplicate appointments
     if (data.some(a => new Date(a.dateTime).getTime() === dateTime.getTime())) {
       return res.status(400).json({ error: 'Time slot already booked' });
     }
 
-    const appointment = { 
-      id: Date.now(), 
-      name, 
-      email, 
-      dateTime: dateTime.toISOString(), 
-      reason, 
-      createdAt: new Date().toISOString() 
+    const appointment = {
+      id: Date.now(),
+      name,
+      email,
+      dateTime: dateTime.toISOString(),
+      reason,
+      createdAt: new Date().toISOString()
     };
-    
+
     data.push(appointment);
     writeData(data);
     res.status(201).json(appointment);
@@ -86,7 +87,7 @@ app.delete('/api/appointments/:id', (req, res) => {
 
     const data = readData();
     const index = data.findIndex(a => a.id.toString() === id);
-    
+
     if (index === -1) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
