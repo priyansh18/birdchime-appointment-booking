@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const API_URL = 'https://babb.vercel.app/api/appointments';
+const API_URL = 'https://babb-priyansh.vercel.app/api/appointments';
 export default function AppointmentsList({ appointments, onCancel, onAppointmentCancelled }) {
   const [cancellingId, setCancellingId] = useState(null);
 

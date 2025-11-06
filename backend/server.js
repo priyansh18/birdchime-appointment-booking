@@ -7,7 +7,7 @@ const app = express();
 const PORT = 4000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://babf.vercel.app/'];
+const whitelist = ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://babf-priyansh.vercel.app/'];
 
 var corsOptions = {
   origin: function (origin, callback) {
@@ -18,8 +18,8 @@ var corsOptions = {
     }
   },
 };
-app.use(cors(corsOptions));
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Initialize data file if it doesn't exist
