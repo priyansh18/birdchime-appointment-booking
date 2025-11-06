@@ -10,41 +10,16 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 // In-memory storage for Vercel (read-only filesystem)
 let inMemoryData = [];
 
-// Enable CORS for all routes
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'https://babb-priyansh.vercel.app',
-  'https://babf-priyansh.vercel.app',
-  'https://birdchime-appointment-booking.vercel.app',
-  'https://birdchime-appointment-booking-zq6c.vercel.app',
-  'https://appointment-scheduler-server.vercel.app'
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin) || 
-        origin.endsWith('.vercel.app') || 
-        origin.endsWith('birdchime-appointment-booking.vercel.app')) {
-      return callback(null, true);
-    }
-    
-    console.log('CORS blocked for origin:', origin);
-    return callback(new Error('Not allowed by CORS'));
-  },
+// Enable CORS for all routes - Allow all origins since Vercel generates dynamic URLs
+app.use(cors({
+  origin: '*',
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  credentials: true,
-  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-};
-
-app.use(cors(corsOptions));
+  optionsSuccessStatus: 200
+}));
 
 // Handle preflight requests
-app.options('*', cors(corsOptions));
+app.options('*', cors());
 app.use(express.json());
 
 // Initialize data file if it doesn't exist (only for local development)
