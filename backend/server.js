@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
+// Enable CORS for all routes by using the middleware globally
+app.use(cors());
+
 let inMemoryData = [];
 
 // // Uncomment it out if in development mode
@@ -26,9 +29,6 @@ let inMemoryData = [];
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Enable CORS for all routes by using the middleware globally
-app.use(cors());
 
 // Routes
 app.get('/', (req, res) => {
