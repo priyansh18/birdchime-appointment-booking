@@ -15,18 +15,30 @@ let inMemoryData = [];
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Enable CORS for all routes - Allow all origins since Vercel generates dynamic URLs
-app.use(cors({
+// Enable CORS with specific options
+const corsOptions = {
   origin: '*',
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   optionsSuccessStatus: 200,
-  credentials: true
-}));
+  credentials: true,
+  preflightContinue: false
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 // Handle preflight requests
-app.options('*', cors());
+app.options('*', cors(corsOptions));
+
+// Body parsing middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Test route to verify CORS is working
+app.get('/api/test', (req, res) => {
+  res.json({ status: 'ok', message: 'CORS is working!' });
+});
 
 // Initialize data file if it doesn't exist (only for local development)
 if (process.env.NODE_ENV !== 'production') {
@@ -254,8 +266,24 @@ app.delete('/api/appointments/:id', async (req, res) => {
   }
 });
 
-// Export the Express app for Vercel serverless functions
-module.exports = app;
+// For Vercel serverless functions
+exports.handler = async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Request-Method', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET, POST, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    res.statusCode = 200;
+    res.end();
+    return;
+  }
+
+  // Forward the request to Express
+  return app(req, res);
+};
 
 // Only start the server if running locally (not in Vercel)
 if (require.main === module) {
