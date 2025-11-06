@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { API_CONFIG, API_ENDPOINTS } from '../config';
 
 export default function AppointmentsList({ appointments, onCancel, onAppointmentCancelled }) {
   const [cancellingId, setCancellingId] = useState(null);
@@ -6,7 +8,7 @@ export default function AppointmentsList({ appointments, onCancel, onAppointment
   const cancel = async (id) => {
     try {
       setCancellingId(id);
-      const response = await fetch(`http://localhost:4000/api/appointments/${id}`, { 
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.APPOINTMENTS.BY_ID(id)}`, { 
         method: "DELETE" 
       });
       

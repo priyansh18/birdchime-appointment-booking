@@ -4,8 +4,9 @@ import BookingModal from './components/BookingModal';
 import UpcomingAppointments from './pages/UpcomingAppointments';
 import './index.css';
 import './App.css';
+import { API_CONFIG, API_ENDPOINTS } from './config';
 
-const API_URL = 'http://localhost:4000/api/appointments';
+const API_URL = `${API_CONFIG.BASE_URL}${API_ENDPOINTS.APPOINTMENTS.BASE}`;
 
 const TimeSlot = ({ slot, appointment, onBook, onCancel }) => {
   const isPast = slot.getTime() < Date.now();

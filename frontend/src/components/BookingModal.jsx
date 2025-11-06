@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { API_CONFIG, API_ENDPOINTS } from '../config';
 
 export default function BookingModal({ slotIso, onClose, onBooked }) {
   const [form, setForm] = useState({ name: '', email: '', reason: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const res = await fetch("http://localhost:4000/api/appointments", {
+      const res = await fetch(API_CONFIG.BASE_URL + API_ENDPOINTS.APPOINTMENTS.BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
