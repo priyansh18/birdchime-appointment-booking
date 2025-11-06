@@ -56,7 +56,6 @@ app.post('/api/appointments', (req, res) => {
     const appointment = { id: Date.now(), name, email, dateTime, reason, createdAt: new Date().toISOString() };
     data.push(appointment);
     writeData(data);
-    
     res.status(201).json(appointment);
   } catch (err) {
     console.error('Error creating appointment:', err);
