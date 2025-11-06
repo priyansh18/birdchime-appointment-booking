@@ -167,11 +167,12 @@ app.delete('/api/appointments/:id', (req, res) => {
   }
 });
 
-// Export the app for Vercel serverless functions
+// Export the Express app for Vercel serverless functions
 module.exports = app;
 
 // Only start the server if running locally (not in Vercel)
 if (require.main === module) {
+  const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
