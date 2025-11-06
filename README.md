@@ -26,3 +26,9 @@ A simple appointment booking system with a weekly calendar view.
 - `GET /api/appointments` - Get all appointments
 - `POST /api/appointments` - Create new appointment
 - `DELETE /api/appointments/:id` - Cancel appointment
+
+## Deployment
+
+**Frontend**: [https://birdchime-appointment-booking.vercel.app](https://birdchime-appointment-booking.vercel.app)
+
+**Important Note**: The backend uses in-memory storage on Vercel (due to read-only filesystem). Data will be reset when the server restarts. For production use, consider integrating a database like MongoDB, PostgreSQL, or Supabase.

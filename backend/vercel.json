@@ -9,7 +9,11 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "server.js"
+            "dest": "server.js",
+            "methods": ["GET", "POST", "DELETE", "OPTIONS"]
         }
-    ]
+    ],
+    "env": {
+        "NODE_ENV": "production"
+    }
 }

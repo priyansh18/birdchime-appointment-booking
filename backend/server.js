@@ -17,6 +17,7 @@ const allowedOrigins = [
   'https://babb-priyansh.vercel.app',
   'https://babf-priyansh.vercel.app',
   'https://birdchime-appointment-booking.vercel.app',
+  'https://birdchime-appointment-booking-zq6c.vercel.app',
   'https://appointment-scheduler-server.vercel.app'
 ];
 
@@ -178,8 +179,14 @@ app.delete('/api/appointments/:id', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Storage mode: ${process.env.NODE_ENV === 'production' ? 'in-memory' : 'file-based'}`);
-});
+// Export the app for Vercel serverless functions
+module.exports = app;
+
+// Only start the server if not in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Storage mode: ${process.env.NODE_ENV === 'production' ? 'in-memory' : 'file-based'}`);
+  });
+}

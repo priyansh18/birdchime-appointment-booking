@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const API_URL = 'https://appointment-scheduler-server.vercel.app/api/appointments';
+const API_URL = 'https://birdchime-appointment-booking-zq6c.vercel.app/api/appointments';
 export default function AppointmentsList({ appointments, onCancel, onAppointmentCancelled }) {
   const [cancellingId, setCancellingId] = useState(null);
 
