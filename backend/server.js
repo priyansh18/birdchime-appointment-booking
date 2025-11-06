@@ -29,27 +29,10 @@ let inMemoryData = [];
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-// Add CORS headers to all responses
-// app.use((req, res, next) => {
-//   const origin = req.headers.origin;
-//   if (whitelist.includes(origin)) {
-//     res.setHeader('Access-Control-Allow-Origin', origin);
-//   }
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-//   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-//   res.header('Access-Control-Allow-Credentials', 'true');
-  
-//   // Handle preflight
-//   if (req.method === 'OPTIONS') {
-//     return res.status(200).end();
-//   }
-  
-//   next();
-// });
 
 
 // Routes
-app.get('/', cors(corsOptionsDelegate), (req, res) => {
+app.get('/', (req, res) => {
   res.json({ 
     message: 'Appointment Booking API',
     status: 'running',
@@ -62,11 +45,11 @@ app.get('/', cors(corsOptionsDelegate), (req, res) => {
   });
 });
 
-app.get('/api/health',   cors(corsOptionsDelegate), (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/appointments', cors(corsOptionsDelegate), (req, res) => {
+app.get('/api/appointments', (req, res) => {
   try {
     console.log('Fetching all appointments');
     const data = [...inMemoryData];
@@ -81,7 +64,7 @@ app.get('/api/appointments', cors(corsOptionsDelegate), (req, res) => {
   }
 });
 
-app.post('/api/appointments', cors(corsOptionsDelegate), async (req, res) => {
+app.post('/api/appointments', async (req, res) => {
   try {
     console.log('Received appointment request:', req.body);
     
@@ -161,7 +144,7 @@ app.post('/api/appointments', cors(corsOptionsDelegate), async (req, res) => {
   }
 });
 
-app.delete('/api/appointments/:id', cors(corsOptionsDelegate), async (req, res) => {
+app.delete('/api/appointments/:id', async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`Received delete request for appointment ID: ${id}`);
