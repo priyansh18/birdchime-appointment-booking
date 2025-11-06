@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/UpcomingAppointments.css';
+import {API_URL} from "../constants";
 
-const API_URL = 'https://birdchime-appointment-booking.vercel.app/api/appointments'
 const UpcomingAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -1,21 +1,9 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
-const isVercel = process.env.VERCEL === '1';
-const DATA_FILE = isVercel ? null : path.join(__dirname, 'data.json');
-
-// In-memory storage for Vercel (read-only filesystem)
 let inMemoryData = [];
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Enable CORS with specific options
 const corsOptions = {
   origin: '*',
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
@@ -25,81 +13,9 @@ const corsOptions = {
   preflightContinue: false
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
-
-// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Test route to verify CORS is working
-app.get('/api/test', (req, res) => {
-  res.json({ status: 'ok', message: 'CORS is working!' });
-});
-
-// Initialize data file if it doesn't exist (only for local development)
-if (process.env.NODE_ENV !== 'production') {
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, '[]');
-  }
-  // Load existing data into memory
-  try {
-    inMemoryData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  } catch (error) {
-    console.log('No existing data file, starting fresh');
-    inMemoryData = [];
-  }
-} else {
-  console.log('Running in production mode - using in-memory storage');
-}
-
-const readData = () => {
-  // In production (Vercel), use in-memory storage
-  if (process.env.NODE_ENV === 'production') {
-    return inMemoryData;
-  }
-  
-  // In development, read from file
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  } catch (error) {
-    console.error('Error reading data file:', error);
-    return [];
-  }
-};
-
-const writeData = (data) => {
-  return new Promise((resolve, reject) => {
-    // In production (Vercel), use in-memory storage
-    if (process.env.NODE_ENV === 'production') {
-      inMemoryData = [...data]; // Create a new array to ensure immutability
-      console.log('Data updated in memory. Current count:', inMemoryData.length);
-      return resolve();
-    }
-    
-    // In development, write to file
-    try {
-      const dir = path.dirname(DATA_FILE);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), 'utf8', (err) => {
-        if (err) {
-          console.error('Error writing data file:', err);
-          return reject(err);
-        }
-        console.log('Data successfully written to file');
-        resolve();
-      });
-    } catch (error) {
-      console.error('Error in writeData:', error);
-      reject(error);
-    }
-  });
-};
 
 // Routes
 app.get('/', (req, res) => {
@@ -122,14 +38,14 @@ app.get('/api/health', (req, res) => {
 app.get('/api/appointments', (req, res) => {
   try {
     console.log('Fetching all appointments');
-    const data = readData();
+    const data = [...inMemoryData];
     console.log(`Found ${data.length} appointments`);
     res.json(data);
   } catch (err) {
     console.error('Error reading appointments:', err);
     res.status(500).json({ 
       error: 'Failed to fetch appointments',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      details: err.message
     });
   }
 });
@@ -170,7 +86,7 @@ app.post('/api/appointments', async (req, res) => {
       });
     }
 
-    const data = readData();
+    const data = [...inMemoryData];
     console.log(`Current appointments count: ${data.length}`);
 
     // Check for duplicate appointments (within the same minute to avoid millisecond precision issues)
@@ -197,11 +113,8 @@ app.post('/api/appointments', async (req, res) => {
       createdAt: new Date().toISOString()
     };
 
-    console.log('Creating new appointment:', appointment);
-    data.push(appointment);
-    
     try {
-      await writeData(data);
+      inMemoryData = [...inMemoryData, appointment]
       console.log('Appointment created successfully');
       return res.status(201).json(appointment);
     } catch (writeError) {
@@ -230,7 +143,7 @@ app.delete('/api/appointments/:id', async (req, res) => {
       });
     }
 
-    const data = readData();
+    const data = [...inMemoryData];
     const appointmentId = Number(id);
     const index = data.findIndex(a => a.id === appointmentId);
     
@@ -243,10 +156,8 @@ app.delete('/api/appointments/:id', async (req, res) => {
       });
     }
 
-    const [deletedAppointment] = data.splice(index, 1);
-    
     try {
-      await writeData(data);
+      inMemoryData = data.filter((item) => item.id !== appointmentId);
       console.log(`Successfully deleted appointment: ${id}`);
       return res.json({ 
         success: true, 

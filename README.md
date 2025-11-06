@@ -29,6 +29,6 @@ A simple appointment booking system with a weekly calendar view.
 
 ## Deployment
 
-**Frontend**: [https://birdchime-appointment-booking.vercel.app](https://birdchime-appointment-booking.vercel.app)
+**Frontend**: [https://babfrontend.vercel.app](https://babfrontend.vercel.app)
 
 **Important Note**: The backend uses in-memory storage on Vercel (due to read-only filesystem). Data will be reset when the server restarts. For production use, consider integrating a database like MongoDB, PostgreSQL, or Supabase.

@@ -1,19 +1,17 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/app.js",
-      "use": "@vercel/node"
-    }
-  ],
+  "name": "babbackend",
+  "builds": [{ "src": "server.js", "use": "@vercel/node" }],
   "routes": [
     {
+      "src": "/",
+      "dest": "/server.js",
+      "methods": ["GET"]
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/api/app"
+      "dest": "/server.js",
+      "methods": ["GET", "POST", "DELETE"]
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "VERCEL": "1"
-  }
+  ]
 }

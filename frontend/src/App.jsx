@@ -4,7 +4,8 @@ import BookingModal from './components/BookingModal';
 import UpcomingAppointments from './pages/UpcomingAppointments';
 import './index.css';
 import './App.css';
-const API_URL = 'https://birdchime-appointment-booking.vercel.app/api/appointments'
+import {API_URL} from "./constants";
+
 const TimeSlot = ({ slot, appointment, onBook, onCancel }) => {
   const isPast = slot.getTime() < Date.now();
   const isCurrentHour = new Date().getHours() === slot.getHours() && 
