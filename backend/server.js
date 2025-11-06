@@ -7,7 +7,7 @@ var dynamicCorsOptions = function(req, callback) {
   var corsOptions;
   if (req.path.startsWith('/api/appointments')) {
     corsOptions = {
-      origin: 'https://babfrontend.vercel.app', // Allow only a specific origin
+      origin: 'https://babfrontend.vercel.app/', // Allow only a specific origin
       credentials: true,            // Enable cookies and credentials
     };
   } else {
