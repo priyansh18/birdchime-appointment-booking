@@ -4,18 +4,29 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-const corsOptions = {
-  origin: '*',
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  optionsSuccessStatus: 200,
-  credentials: true,
-  preflightContinue: false
+// Uncomment it out if in development mode
+// app.use(morgan("tiny"));
+var whitelist = [
+  "https://babfrontend.vercel.app/",
+  "https://babfrontend.vercel.app",
+  "http://localhost:5173", // for react apps
+  "http://localhost:3000", // for react apps
+  "http://localhost:4000", // for react apps
+];
+
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
 };
 
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors(corsOptions));
 
 // Routes
 app.get('/', (req, res) => {
