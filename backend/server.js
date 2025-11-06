@@ -33,7 +33,11 @@ let inMemoryData = [];
 
 // Apply CORS before other middleware
 // app.use(cors(corsOptions));
-// app.options(/(.*)/, cors(corsOptions)); // Enable pre-flight for all routes
+app.options(/(.*)/, cors({
+  origin: 'https://babfrontend.vercel.app/', // Replace with your client's origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow these methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
+})); // Enable pre-flight for all routes
 
 
 // Add CORS headers to all responses
