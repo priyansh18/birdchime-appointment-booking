@@ -4,20 +4,39 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-// Add CORS middleware - PUT THIS FIRST!
-app.use(cors({
-  origin: [
-    'https://birdchime-appointment-booking-3.onrender.com',
-    'http://localhost:5173', // for local development
-    'http://localhost:3000'
-  ],
+// CORS Configuration
+const allowedOrigins = [
+  'https://birdchime-appointment-booking-31.onrender.com', // Your frontend URL
+  'https://birdchime-appointment-booking-32.onrender.com', // Your backend URL (for reference)
+  'http://localhost:5173',
+  'http://localhost:3000'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy: ${origin} not allowed`;
+      console.error('CORS error:', msg);
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+  preflightContinue: false
+};
+
+// Enable CORS for all routes
+app.use(cors(corsOptions));
 
 // Handle preflight requests
-app.options('*', cors());
+app.options('*', cors(corsOptions)); // Enable preflight for all routes
 
 // Your other middleware
 app.use(express.json());
