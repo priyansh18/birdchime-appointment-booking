@@ -38,8 +38,27 @@ const TimeSlot = ({ slot, appointment, onBook, onCancel }) => {
 };
 
 const DayColumn = ({ day, slots, appointments, onBook, onCancel }) => {
-  const findAppointment = (slot) => 
-    appointments.find(a => new Date(a.dateTime).getTime() === slot.getTime());
+  const findAppointment = (slot) => {
+    if (!Array.isArray(appointments)) {
+      console.error('appointments is not an array:', appointments);
+      return null;
+    }
+    if (!(slot instanceof Date) || isNaN(slot.getTime())) {
+      console.error('Invalid slot date:', slot);
+      return null;
+    }
+    return appointments.find(a => {
+      try {
+        if (!a || !a.dateTime) return false;
+        const appointmentDate = new Date(a.dateTime);
+        return !isNaN(appointmentDate.getTime()) && 
+               appointmentDate.getTime() === slot.getTime();
+      } catch (error) {
+        console.error('Error processing appointment:', error);
+        return false;
+      }
+    }) || null;
+  };
 
   return (
     <div className="day-column">
