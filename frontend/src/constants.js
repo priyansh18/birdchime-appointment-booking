@@ -1,1 +1,1 @@
-export const API_URL = import.meta.env.VITE_API_URL ?? 'https://babbackend.vercel.app/api/appointments'
+export const API_URL = import.meta.env.VITE_API_URL ?? 'https://birdchime-appointment-booking-32.onrender.com/'
