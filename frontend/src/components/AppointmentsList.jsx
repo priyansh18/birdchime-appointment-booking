@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {API_URL} from "../constants";
+import api from '../utils/api';
 
 export default function AppointmentsList({ appointments, onCancel, onAppointmentCancelled }) {
   const [cancellingId, setCancellingId] = useState(null);
+  const [error, setError] = useState(null);
 
   const cancel = async (id) => {
     try {
       setCancellingId(id);
+      setError(null);
       
-      const response = await fetch(`${API_URL}/${id}`, { 
-        method: "DELETE" 
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to cancel appointment');
-      }
+      await api.delete(`/api/appointments/${id}`);
       
       if (onAppointmentCancelled) {
         onAppointmentCancelled();
@@ -23,9 +19,9 @@ export default function AppointmentsList({ appointments, onCancel, onAppointment
       if (onCancel) {
         onCancel();
       }
-    } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      alert('Failed to cancel appointment. Please try again.');
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      setError(err.message || 'Failed to cancel appointment. Please try again.');
     } finally {
       setCancellingId(null);
     }

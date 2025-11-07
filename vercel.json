@@ -1,0 +1,15 @@
+{
+  "cors": {
+    "allowedOrigins": [
+      "https://birdchime-appointment-booking-31.onrender.com",
+      "https://birdchime-appointment-booking-32.onrender.com"
+    ],
+    "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allowedHeaders": ["Content-Type", "Authorization"],
+    "allowCredentials": true
+  },
+  "routes": [
+    { "src": "/api/.*", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
+  ]
+}

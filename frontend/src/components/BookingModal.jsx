@@ -1,46 +1,10 @@
 import React, { useState } from "react";
-import {API_URL} from "../constants";
+import api from "../utils/api";
 
 export default function BookingModal({ slotIso, onClose, onBooked }) {
   const [form, setForm] = useState({ name: '', email: '', reason: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      // Ensure dateTime is in ISO string format
-      const dateTime = new Date(slotIso).toISOString();
-      
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify({ 
-          ...form, 
-          dateTime
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Failed to book appointment');
-      }
-
-      const newAppointment = await res.json();
-      onBooked(newAppointment);
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,6 +12,27 @@ export default function BookingModal({ slotIso, onClose, onBooked }) {
       ...prev,
       [name]: value
     }));
+  };
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await api.post('/api/appointments', {
+        ...form,
+        dateTime: new Date(slotIso).toISOString()
+      });
+      
+      onBooked(data);
+      onClose();
+    } catch (err) {
+      console.error('Booking failed:', err);
+      setError(err.message || 'Failed to book appointment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const slotDate = new Date(slotIso);

@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/UpcomingAppointments.css';
-import {API_URL} from "../constants";
+import api from '../utils/api';
 
 const UpcomingAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
 
   // Fetch appointments from backend
   const fetchAppointments = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const data = await res.json();
+      const data = await api.get('/api/appointments');
       setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch appointments", err);
-      setError('Failed to load appointments. Please try again later.');
+      setError(err.message || 'Failed to load appointments. Please try again later.');
       setAppointments([]);
     } finally {
       setLoading(false);
@@ -36,23 +35,14 @@ const UpcomingAppointments = () => {
     }
 
     try {
-      const response = await fetch(`${API_URL}/${appointmentId}`, { 
-        method: 'DELETE',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to cancel appointment');
-      }
-
-      await fetchAppointments();
-    } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      alert(`Error: ${error.message || 'Failed to cancel appointment'}`);
+      setCancellingId(appointmentId);
+      await api.delete(`/api/appointments/${appointmentId}`);
+      setAppointments(prev => prev.filter(a => a.id !== appointmentId));
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      setError(err.message || 'Failed to cancel appointment. Please try again.');
+    } finally {
+      setCancellingId(null);
     }
   };
 

@@ -2,34 +2,44 @@ const express = require('express');
 const cors = require('cors');
 
 const app = express();
+
+// In-memory data store
 let inMemoryData = [];
 
-// Debug CORS - Temporarily allow all origins
-console.log('CORS middleware initialized');
-
-// Enable CORS for all routes
+// Simple CORS middleware
 app.use((req, res, next) => {
-  console.log('Incoming request:', req.method, req.path, 'from origin:', req.headers.origin);
+  const allowedOrigins = [
+    'https://birdchime-appointment-booking-31.onrender.com',
+    'https://birdchime-appointment-booking-32.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ];
   
-  // Allow all origins
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.header('Access-Control-Allow-Credentials', 'true');
   
-  // Handle preflight requests
+  // Handle preflight
   if (req.method === 'OPTIONS') {
-    console.log('Handling preflight request');
-    return res.status(200).end();
+    return res.sendStatus(200);
   }
   
   next();
 });
 
-// Your other middleware
+// Body parsing middleware
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 app.get('/', (req, res) => {
   res.json({
@@ -140,6 +150,20 @@ app.delete('/api/appointments/:id', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+
+// Start the server
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log('Allowed Origins:', [
+    'https://birdchime-appointment-booking-31.onrender.com',
+    'https://birdchime-appointment-booking-32.onrender.com',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ]);
+  console.log('CORS Headers:', {
+    'Access-Control-Allow-Origin': 'Dynamically set based on request origin',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Credentials': 'true'
+  });
 });
