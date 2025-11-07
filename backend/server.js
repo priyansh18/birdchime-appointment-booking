@@ -21,37 +21,59 @@ const staticAllowed = [
 ].filter(Boolean);
 
 const isAllowedOrigin = (origin) => {
-  if (!origin) return true;
   try {
-    const url = new URL(origin);
-    const { hostname, protocol } = url;
-    if (!/^https?:$/.test(protocol)) return false;
-
-    if ([...staticAllowed, ...envAllowed].includes(origin)) return true;
-
-    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
-
-    if (process.env.ALLOW_VERCEL_PREVIEWS === 'true' && hostname.endsWith('.vercel.app')) {
+    if (!origin) return true;
+    
+    // Handle cases where origin might be undefined or malformed
+    if (typeof origin !== 'string') return false;
+    
+    // Allow all subdomains of vercel.app if ALLOW_VERCEL_PREVIEWS is true
+    if (process.env.ALLOW_VERCEL_PREVIEWS === 'true' && origin.endsWith('.vercel.app')) {
       return true;
     }
-
-    return false;
-  } catch (e) {
+    
+    // Allow local development
+    if (process.env.NODE_ENV !== 'production') {
+      const localhostRegex = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?$/;
+      if (localhostRegex.test(origin)) return true;
+    }
+    
+    // Check against allowed origins
+    const allowedOrigins = [...new Set([...staticAllowed, ...envAllowed])];
+    return allowedOrigins.includes(origin);
+    
+  } catch (error) {
+    console.error('CORS validation error:', error);
     return false;
   }
 };
 
 const corsOptionsDelegate = function (req, callback) {
-  const origin = req.header('Origin');
-  const allowed = isAllowedOrigin(origin);
-  console.log('🌐 CORS check for:', origin, '| Allowed:', allowed);
-  callback(null, {
-    origin: allowed,
-    credentials: true,
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 204
-  });
+  try {
+    const origin = req.header('Origin');
+    const allowed = isAllowedOrigin(origin);
+    
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('🌐 CORS check for:', origin, '| Allowed:', allowed);
+    }
+    
+    return callback(null, {
+      origin: allowed,
+      credentials: true,
+      methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      optionsSuccessStatus: 204,
+      maxAge: 600 // Cache preflight for 10 minutes
+    });
+  } catch (error) {
+    console.error('CORS middleware error:', error);
+    // In case of error, be permissive in development, restrictive in production
+    return callback(null, {
+      origin: process.env.NODE_ENV === 'production' ? false : true,
+      credentials: true,
+      methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+    });
+  }
 };
 
 app.use(cors(corsOptionsDelegate));
