@@ -4,39 +4,27 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-// CORS Configuration
-const allowedOrigins = [
-  'https://birdchime-appointment-booking-31.onrender.com', // Your frontend URL
-  'https://birdchime-appointment-booking-32.onrender.com', // Your backend URL (for reference)
-  'http://localhost:5173',
-  'http://localhost:3000'
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `CORS policy: ${origin} not allowed`;
-      console.error('CORS error:', msg);
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
-  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
-  preflightContinue: false
-};
+// Debug CORS - Temporarily allow all origins
+console.log('CORS middleware initialized');
 
 // Enable CORS for all routes
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions)); // Enable preflight for all routes
+app.use((req, res, next) => {
+  console.log('Incoming request:', req.method, req.path, 'from origin:', req.headers.origin);
+  
+  // Allow all origins
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('Handling preflight request');
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
 // Your other middleware
 app.use(express.json());
