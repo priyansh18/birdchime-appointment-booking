@@ -1,57 +1,71 @@
-import { API_URL } from '../constants';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+async function handleResponse(response) {
+  const contentType = response.headers.get('content-type');
+  
+  if (!response.ok) {
+    let errorData;
+    try {
+      errorData = await (contentType?.includes('application/json') 
+        ? response.json() 
+        : response.text()
+      );
+    } catch (e) {
+      errorData = { message: 'Failed to parse error response' };
+    }
+    
+    const error = new Error(errorData.message || 'Something went wrong');
+    error.status = response.status;
+    error.data = errorData;
+    throw error;
+  }
+
+  if (response.status === 204) return null;
+  return contentType?.includes('application/json') 
+    ? response.json() 
+    : response.text();
+}
 
 const api = {
-  async request(endpoint, options = {}) {
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
-
-    const config = {
-      ...options,
-      headers,
-      credentials: 'include', // Important for cookies, authorization headers with HTTPS
-      mode: 'cors', // no-cors, *cors, same-origin
-    };
-
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, config);
-      
-      // Handle non-2xx responses
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
-        throw new Error(error.message || 'Something went wrong');
-      }
-      
-      // Handle 204 No Content responses
-      if (response.status === 204) {
-        return null;
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('API request failed:', error);
-      throw error;
-    }
+  get: async (endpoint) => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'GET',
+      headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' 
+      },
+      credentials: 'include',
+      mode: 'cors'
+    });
+    return handleResponse(response);
   },
 
-  // Example methods
-  get(endpoint) {
-    return this.request(endpoint);
-  },
-
-  post(endpoint, data) {
-    return this.request(endpoint, {
+  post: async (endpoint, data) => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'POST',
+      headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' 
+      },
       body: JSON.stringify(data),
+      credentials: 'include',
+      mode: 'cors'
     });
+    return handleResponse(response);
   },
 
-  delete(endpoint) {
-    return this.request(endpoint, {
+  delete: async (endpoint) => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'DELETE',
+      headers: { 
+        'Accept': 'application/json',
+        'Content-Type': 'application/json' 
+      },
+      credentials: 'include',
+      mode: 'cors'
     });
-  },
+    return handleResponse(response);
+  }
 };
 
 export default api;
