@@ -4,82 +4,24 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-const envAllowed = (process.env.EXTRA_ALLOWED_ORIGINS || '')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
+// Add CORS middleware - PUT THIS FIRST!
+app.use(cors({
+  origin: [
+    'https://birdchime-appointment-booking-3.onrender.com',
+    'http://localhost:5173', // for local development
+    'http://localhost:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-const staticAllowed = [
-  'https://babfrontend.vercel.app',
-  process.env.FRONTEND_DOMAIN,
-  'http://localhost:5173',
-  'https://localhost:5173',
-  'http://localhost:3000',
-  'https://localhost:3000',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:3000'
-].filter(Boolean);
+// Handle preflight requests
+app.options('*', cors());
 
-const isAllowedOrigin = (origin) => {
-  try {
-    if (!origin) return true;
-    
-    // Handle cases where origin might be undefined or malformed
-    if (typeof origin !== 'string') return false;
-    
-    // Allow all subdomains of vercel.app if ALLOW_VERCEL_PREVIEWS is true
-    if (process.env.ALLOW_VERCEL_PREVIEWS === 'true' && origin.endsWith('.vercel.app')) {
-      return true;
-    }
-    
-    // Allow local development
-    if (process.env.NODE_ENV !== 'production') {
-      const localhostRegex = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?$/;
-      if (localhostRegex.test(origin)) return true;
-    }
-    
-    // Check against allowed origins
-    const allowedOrigins = [...new Set([...staticAllowed, ...envAllowed])];
-    return allowedOrigins.includes(origin);
-    
-  } catch (error) {
-    console.error('CORS validation error:', error);
-    return false;
-  }
-};
-
-const corsOptionsDelegate = function (req, callback) {
-  try {
-    const origin = req.header('Origin');
-    const allowed = isAllowedOrigin(origin);
-    
-    if (process.env.NODE_ENV !== 'test') {
-      console.log('🌐 CORS check for:', origin, '| Allowed:', allowed);
-    }
-    
-    return callback(null, {
-      origin: allowed,
-      credentials: true,
-      methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-      optionsSuccessStatus: 204,
-      maxAge: 600 // Cache preflight for 10 minutes
-    });
-  } catch (error) {
-    console.error('CORS middleware error:', error);
-    // In case of error, be permissive in development, restrictive in production
-    return callback(null, {
-      origin: process.env.NODE_ENV === 'production' ? false : true,
-      credentials: true,
-      methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
-    });
-  }
-};
-
-app.use(cors(corsOptionsDelegate));
-app.options('*', cors(corsOptionsDelegate));
-
+// Your other middleware
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
