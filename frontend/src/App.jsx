@@ -86,13 +86,13 @@ const CalendarPage = () => {
 
   const generateWeekSlots = () => {
     const now = new Date();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-    monday.setHours(0, 0, 0, 0);
+    const startDay = new Date(now);
+    startDay.setDate(now.getDate() - 1); // Start from yesterday
+    startDay.setHours(0, 0, 0, 0);
 
     return Array(5).fill().flatMap((_, dayOffset) => {
-      const day = new Date(monday);
-      day.setDate(monday.getDate() + dayOffset);
+      const day = new Date(startDay);
+      day.setDate(startDay.getDate() + dayOffset);
       
       return Array(16).fill().map((_, i) => {
         const slot = new Date(day);
