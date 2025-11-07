@@ -12,8 +12,18 @@ let inMemoryData = [];
 app.use((req, res, next) => {
   console.log('Incoming request from origin:', req.headers.origin);
   
-  // Allow all origins for now
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  // Allowed origins
+  const allowedOrigins = [
+    'https://birdchime-appointment-booking-5v7c.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -77,6 +87,34 @@ app.get('/api/appointments', (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch appointments', details: err.message });
+  }
+});
+
+app.get('/api/appointments/upcoming', (req, res) => {
+  try {
+    const { start, end } = req.query;
+    console.log('Fetching upcoming appointments between', start, 'and', end);
+    
+    if (!start || !end) {
+      return res.status(400).json({ error: 'Start and end dates are required' });
+    }
+    
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid date format. Use YYYY-MM-DD' });
+    }
+    
+    const filteredAppointments = inMemoryData.filter(appointment => {
+      const appointmentDate = new Date(appointment.dateTime);
+      return appointmentDate >= startDate && appointmentDate <= endDate;
+    });
+    
+    res.json(filteredAppointments);
+  } catch (err) {
+    console.error('Error fetching upcoming appointments:', err);
+    res.status(500).json({ error: 'Failed to fetch upcoming appointments', details: err.message });
   }
 });
 
@@ -167,8 +205,9 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log('Allowed Origins:', [
-    'https://birdchime-appointment-booking-31.onrender.com',
-    'https://birdchime-appointment-booking-32.onrender.com',
+    'https://birdchime-appointment-booking-5v7c.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5173'
   ]);
