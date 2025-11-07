@@ -176,19 +176,55 @@ const CalendarPage = () => {
 
   const handleCancel = async (e, appointment) => {
     e.stopPropagation();
-    if (!window.confirm(`Cancel appointment with ${appointment.name}?`)) return;
+    if (!appointment?.id) {
+      console.error('No appointment ID provided for cancellation');
+      return;
+    }
+    
+    if (!window.confirm(`Cancel appointment with ${appointment.name || 'this person'}?`)) {
+      return;
+    }
     
     try {
-      const response = await fetch(`${API_URL}/${appointment.id}`, { 
-        method: 'DELETE' 
+      // Ensure the URL is properly formatted
+      const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+      const url = `${baseUrl}/api/appointments/${appointment.id}`;
+      console.log('Sending DELETE request to:', url);
+      
+      const response = await fetch(url, { 
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        mode: 'cors'
       });
       
-      if (!response.ok) throw new Error('Failed to cancel');
+      console.log('Delete response status:', response.status);
+      
+      if (!response.ok) {
+        let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          // If we can't parse the error response, use the status text
+          console.error('Failed to parse error response:', e);
+        }
+        throw new Error(errorMessage);
+      }
+      
+      // Refresh the appointments list
       await fetchAppointments();
-      alert('Appointment cancelled!');
+      alert('Appointment cancelled successfully!');
     } catch (error) {
-      console.error('Error:', error);
-      alert(error.message);
+      console.error('Error cancelling appointment:', {
+        error: error.message,
+        stack: error.stack,
+        appointmentId: appointment?.id
+      });
+      alert(`Error: ${error.message || 'Failed to cancel appointment. Please try again.'}`);
     }
   };
 
