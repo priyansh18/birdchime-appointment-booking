@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: birdchime-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: ALLOWED_ORIGINS
+        value: https://birdchime-appointment-31.onrender.com,http://localhost:5173
+
+  - type: web
+    name: birdchime-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://birdchime-backend.onrender.com
