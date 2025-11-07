@@ -4,40 +4,62 @@ const cors = require('cors');
 const app = express();
 let inMemoryData = [];
 
-// ✅ Whitelist your frontend URLs
-const whitelist = [
+const envAllowed = (process.env.EXTRA_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const staticAllowed = [
   'https://babfrontend.vercel.app',
+  process.env.FRONTEND_DOMAIN,
   'http://localhost:5173',
+  'https://localhost:5173',
   'http://localhost:3000',
+  'https://localhost:3000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:3000'
-];
+].filter(Boolean);
 
-// ✅ CORS configuration delegate
-const corsOptionsDelegate = function (req, callback) {
-  const origin = req.header('Origin');
-  const isWhitelisted = whitelist.includes(origin);
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  try {
+    const url = new URL(origin);
+    const { hostname, protocol } = url;
+    if (!/^https?:$/.test(protocol)) return false;
 
-  console.log('🌐 CORS check for:', origin, '| Allowed:', isWhitelisted);
+    if ([...staticAllowed, ...envAllowed].includes(origin)) return true;
 
-  const corsOptions = {
-    origin: isWhitelisted,
-    credentials: true,
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  };
-  callback(null, corsOptions);
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+
+    if (process.env.ALLOW_VERCEL_PREVIEWS === 'true' && hostname.endsWith('.vercel.app')) {
+      return true;
+    }
+
+    return false;
+  } catch (e) {
+    return false;
+  }
 };
 
-// ✅ Apply CORS globally before all routes
-app.use(cors(corsOptionsDelegate));
-app.options(/.*/, cors(corsOptionsDelegate)); 
+const corsOptionsDelegate = function (req, callback) {
+  const origin = req.header('Origin');
+  const allowed = isAllowedOrigin(origin);
+  console.log('🌐 CORS check for:', origin, '| Allowed:', allowed);
+  callback(null, {
+    origin: allowed,
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204
+  });
+};
 
-// ✅ Body parsers
+app.use(cors(corsOptionsDelegate));
+app.options('*', cors(corsOptionsDelegate));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Routes
 app.get('/', (req, res) => {
   res.json({
     message: 'Appointment Booking API',
@@ -146,7 +168,6 @@ app.delete('/api/appointments/:id', (req, res) => {
   }
 });
 
-// ✅ Start server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
