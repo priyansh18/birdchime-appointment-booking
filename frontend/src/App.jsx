@@ -90,11 +90,24 @@ const CalendarPage = () => {
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error('Failed to fetch appointments');
-      setAppointments(await res.json());
+      // Ensure the URL ends with a single slash
+      const baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+      const res = await fetch(`${baseUrl}/api/appointments`);
+      
+      if (!res.ok) {
+        throw new Error(`Failed to fetch appointments: ${res.status} ${res.statusText}`);
+      }
+      
+      const data = await res.json();
+      
+      if (!Array.isArray(data)) {
+        console.error('Expected array of appointments but got:', data);
+        throw new Error('Invalid response format: expected array of appointments');
+      }
+      
+      setAppointments(data);
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Error fetching appointments:', err);
       setAppointments([]);
     } finally {
       setLoading(false);
@@ -134,11 +147,31 @@ const CalendarPage = () => {
   }, {});
 
   const handleBooked = async (newAppointment) => {
-    setAppointments(prev => [...prev, newAppointment].sort((a, b) => 
-      new Date(a.dateTime) - new Date(b.dateTime)
-    ));
-    setSelectedSlot(null);
-    await fetchAppointments();
+    try {
+      setAppointments(prev => {
+        // Ensure prev is an array, fallback to empty array if not
+        const prevAppointments = Array.isArray(prev) ? [...prev] : [];
+        
+        // Ensure newAppointment is valid
+        if (!newAppointment || typeof newAppointment !== 'object') {
+          console.error('Invalid appointment data:', newAppointment);
+          return prevAppointments;
+        }
+        
+        // Create new array with the new appointment and sort by date
+        const updatedAppointments = [...prevAppointments, newAppointment];
+        return updatedAppointments.sort((a, b) => {
+          const dateA = a?.dateTime ? new Date(a.dateTime) : 0;
+          const dateB = b?.dateTime ? new Date(b.dateTime) : 0;
+          return dateA - dateB;
+        });
+      });
+      
+      setSelectedSlot(null);
+      await fetchAppointments();
+    } catch (error) {
+      console.error('Error handling booked appointment:', error);
+    }
   };
 
   const handleCancel = async (e, appointment) => {
